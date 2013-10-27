@@ -1,151 +1,235 @@
-﻿<script type="text/javascript" src="~/Scripts/jquery-2.0.3.js"></script>
-<script type="text/javascript" src="~/Scripts/jquery.signalR-2.0.0.js"></script>
-<script type="text/javascript" src="~/signalr/hubs"></script>
-<script type="text/javascript" src="~/Scripts/knockout-2.3.0.js"></script>
-<link href="~/Content/bootstrap/bootstrap.css" rel="stylesheet" />
-<div class="row" data-bind="ifnot: isJoined">
-<label>
-    Name:
-    <input type="text" data-bind="value: name" /></label>
-<button class="btn" data-bind="click: joinGame">Join Game</button>
-</div>
-<div class="row" data-bind="if: isJoined">
-    <h2>Welcome, <span data-bind="text: name"></span></h2>
-</div>
-<div class="row">
-    <div class="chat-pane col-md-4 bordered">
-        <h3>General Chat</h3>
-        <div data-bind="foreach: generalMessages">
-            <p>
-                <span data-bind="text: $data"></span>
-            </p>
+﻿<div class="row-fluid" data-bind="ifnot: isJoined">
+    <div class="col-md-3">
+        <div class="input-group">
+            <span class="input-group-addon">Name</span>
+            <input type="text" class="form-control" data-bind="value: name, enterKey: joinGame" />
+            <span class="input-group-btn">
+                <button class="btn" data-bind="click: joinGame">Join Game</button>
+            </span>
         </div>
-        <input type="text" data-bind="value: generalMessage" />
-        <button class="btn" data-bind="click: sendGeneralMessage">Send</button>
     </div>
-    <div data-bind="visible: isWerewolf" class="werewolf-chat-pane col-md-4  bordered">
-        <h3>Werewolf Chat</h3>
-        <div data-bind="foreach: werewolfMessages">
-            <p><span data-bind="text: $data"></span></p>
+    
+</div>
+
+<div class="row-fluid" data-bind="if: isJoined">
+    <div class="col-md-9">
+        <h2>Welcome, <span data-bind="text: name"></span></h2>
+        <button class="btn" data-bind="visible: !isStarted() && isAdmin, click: startGame">Start Game</button>
+    </div>
+    <div class="col-md-3">
+        <div class="alert alert-danger alert-dismissable" data-bind="visible: showError">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true" data-bind="click: hideError">&times;</button>
+            <div> <span data-bind="text: error"></span></div>
         </div>
-        <input type="text" data-bind="value: werewolfMessage" />
-        <button class="btn" data-bind="click: sendWerewolfMessage">Send</button>
     </div>
-<div data-bind="visible: isVoting" class="col-md-4">
-    <p class="col-md-12">
-        Pick your player: 
-        <select data-bind="value: selectedPlayer, options: players, optionsText: 'name', optionsValue: 'id' "></select>
-    </p>
-    <button class="btn" data-bind="click: castVote">Cast Vote</button>
-</div>
 </div>
 
+<div class="row-fluid" data-bind="if: isJoined">
+    <div class="chat-pane col-md-4">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">General Chat</h3>
+            </div>
+            <div class="panel-body">
+                <div class="input-group">
+                    <input type="text" class="form-control" data-bind="value: generalMessage, enterKey: sendGeneralMessage" />
+                    <span class="input-group-btn">
+                        <button class="btn" data-bind="click: sendGeneralMessage">Send</button>
+                    </span>
+                </div>
+                <!-- ko foreach: generalMessages -->
+                <p><span data-bind="text: $data"></span></p>
+                <!-- /ko -->
+            </div>
 
+        </div>
+    </div>
+    <div data-bind="if: isWerewolf" class="werewolf-chat-pane col-md-4">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">Werewolf Chat</h3>
+            </div>
+            <div class="panel-body">
+                <div class="input-group">
+                    <input class="form-control" type="text" data-bind="value: werewolfMessage, enterKey: sendWerewolfMessage" />
+                    <span class="input-group-btn">
+                        <button class="btn" data-bind="click: sendWerewolfMessage">Send</button>
+                    </span>
+                </div>
+                <!-- ko foreach: werewolfMessages -->
+                <p><span data-bind="text: $data"></span></p>
+                <!-- /ko -->
 
-
-<button class="btn" data-bind="visible: !isStarted() && isAdmin, click: startGame">Start Game</button>
-<script>
-   
-    function ViewModel() {
-        var self = this;
-
-
-        self.chat = $.connection.wereWolfHub;
-        self.generalMessages = ko.observableArray();
-        self.werewolfMessages = ko.observableArray();
-
-        self.werewolfMessage = ko.observable();
-        self.generalMessage = ko.observable();
-
-        self.players = ko.observableArray();
-
-        self.name = ko.observable();
-        self.isWerewolf = ko.observable(false);
-        self.isVoting = ko.observable(false);
-        self.isJoined = ko.observable(false);
-        self.isStarted = ko.observable(false);
-
-        self.isAdmin = ko.computed(function () {
-            return self.name() === "Matthew";
-        });
-
-        self.selectedPlayer = ko.observable();
-
-        self.sendWerewolfMessage = function () {
-            self.chat.server.wereWolfChat(self.werewolfMessage());
-            self.werewolfMessage("");
+            </div>
+        </div>
+    </div>
+    <div data-bind="visible: isVoting" class="col-md-4">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    Voting - Select a player...
+                </h3>
+            </div>
+            <div class="panel-body">
+                <div class="input-group">
+                     <select class="form-control" data-bind="value: selectedPlayer, options: players, optionsText: 'name', optionsValue: 'id' "></select>
+                    <span class="input-group-btn">
+                         <button class="btn" data-bind="click: castVote">Cast Vote</button>
+                    </span>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/lib")
+    <script type="text/javascript" src="~/signalr/hubs"></script>
+    <script type="text/javascript">
+        ko.bindingHandlers.enterKey = {
+            init: function (el, va, aba, data, context) {
+                var wrapper = function (data, event) {
+                    if (event.keyCode === 13) {
+                        va().call(this, data, event);
+                    }
+                };
+                ko.applyBindingsToNode(el, { event: { keyup: wrapper } }, context);
+            }
         };
 
-        self.sendGeneralMessage = function () {
-            self.chat.server.generalChat(self.generalMessage());
-            self.generalMessage("");
-        };
-        self.castVote = function () {
-            self.chat.server.castVote(self.selectedPlayer());
-            self.selectedPlayer("");
-            self.isVoting(false);
-        };
+        function ViewModel() {
+            var self = this;
 
+            //create the hub proxy for "wereWolfHub" -Notice camelCase version of the serers "WereWolfHub"
+            //  By default the hub convension is a camelCased version of the server hub name
+            //      -This can be overrode with [HubName("VillagersAndWerewolfHub")]
+            self.chat = $.connection.wereWolfHub;
 
-        self.name.subscribe(function (newValue) {
-            self.chat.server.setName(newValue);
-        });
+            //two observable lists to hold the general chat messages and the werewolf specific messages
+            self.generalMessages = ko.observableArray();
+            self.werewolfMessages = ko.observableArray();
 
-        self.chat.client.initiateVote = function () {
-            self.generalMessages.push("Voting started!");
+            //two observables to hold the message being send to either chat
+            self.werewolfMessage = ko.observable();
+            self.generalMessage = ko.observable();
 
-            self.isVoting(true);
-            self.chat.server.getCurrentPlayers();
-        };
+            //a list of the players who are currently in the game
+            self.players = ko.observableArray();
 
-        self.joinGame = function () {
-            console.log("called join Game");
-            self.chat.server.joinGame(self.name());
-            self.isJoined(true);
-            
-        };
-        self.chat.client.leaveGame = function () {
-            self.isJoined(false);
-        };
-        self.startGame = function () {
-            self.chat.server.startGame();
-            self.isStarted(true);
-        };
+            //your name
+            self.name = ko.observable();
+            self.playerId = ko.observable(null);
+            self.gameId = ko.observable();
 
-        self.chat.client.message = function (message) {
-            self.generalMessages.push(message);
-        };
+            //some bools to hold random server side stuff for display
+            self.isWerewolf = ko.observable(false);
+            self.isVoting = ko.observable(false);
+            self.isJoined = ko.observable(false);
+            self.isStarted = ko.observable(false);
 
+            self.error = ko.observable();
+            self.showError = ko.observable(false);
 
-        self.chat.client.werewolfMessage = function (message) {
-            self.werewolfMessages.push(message);
-        };
-
-        self.chat.client.error = function (message) {
-            alert(message);
-        };
-
-        self.chat.client.processPlayers = function (players) {
-            console.log(players);
-            self.players.removeAll();
-
-            ko.utils.arrayPushAll(self.players, players);
-        };
-
-        self.chat.client.setWerewolf = function () {
-            self.isWerewolf(true);
-        };
-
-        
-        self.startHub = function () {
-            $.connection.hub.start().done(function () {
-                console.log("hub started");
+            //don't worry about it
+            self.isAdmin = ko.computed(function () {
+                return self.name() === "Matthew";
             });
-        };
-        
 
-    }
-    var vm = new ViewModel();
-    ko.applyBindings(vm);
-    vm.startHub();
-</script>
+            //the player you select to lynch
+            self.selectedPlayer = ko.observable();
+
+            //a knockout method which calls a server side method
+            self.sendWerewolfMessage = function () {
+                self.chat.server.wereWolfChat(self.werewolfMessage());
+                self.werewolfMessage("");
+            };
+
+            self.sendGeneralMessage = function () {
+                self.chat.server.generalChat(self.generalMessage());
+                self.generalMessage("");
+            };
+            self.castVote = function () {
+                self.chat.server.castVote(self.selectedPlayer());
+                self.selectedPlayer("");
+                self.isVoting(false);
+            };
+
+            self.startGame = function () {
+                self.chat.server.startGame();
+                self.isStarted(true);
+            };
+            
+            self.joinGame = function () {
+                console.log("called join Game");
+                self.chat.server.joinGame(self.name(), self.playerId()).done(function (result) {
+                    self.playerId(result.playerId);
+                    self.gameId(result.gameId);
+                });
+                self.isJoined(true);
+
+            };
+
+            self.hideError = function () {
+                self.showError(false);
+                self.error("");
+            };
+
+            self.name.subscribe(function (newValue) {
+                self.chat.server.setName(newValue);
+            });
+
+
+            /*
+                Methods that the server can call on the client are defined on the 'chat.client' object
+            */
+            self.chat.client.initiateVote = function () {
+                self.generalMessages.push("Voting started!");
+
+                self.isVoting(true);
+                self.chat.server.getCurrentPlayers();
+            };
+
+
+            self.chat.client.leaveGame = function () {
+                self.isJoined(false);
+            };
+
+            self.chat.client.message = function (message) {
+                self.generalMessages.push(message);
+            };
+
+
+            self.chat.client.werewolfMessage = function (message) {
+                self.werewolfMessages.push(message);
+            };
+
+            self.chat.client.error = function (message) {
+                self.error(message);
+                self.showError(true);
+            };
+
+            self.chat.client.processPlayers = function (players) {
+                self.players.removeAll();
+                ko.utils.arrayPushAll(self.players, players);
+            };
+
+            self.chat.client.setWerewolf = function () {
+                self.isWerewolf(true);
+            };
+
+            //A function to call once the knockout object is made
+            self.startHub = function () {
+                $.connection.hub.start().done(function () {
+                    console.log("hub started");
+                });
+            };
+        }
+        $(function () {
+            $(document).on("create.vandw", function () {
+                var vm = new ViewModel();
+                ko.applyBindings(vm);
+                vm.startHub();
+            }).trigger("create.vandw");
+        });
+    </script>
+}

@@ -11,6 +11,17 @@ namespace Werewolves.Models
         public bool IsWerewolf { get; set; }
         public string ConnectionId { get; set; }
         public string Name { get; set; }
+        public IList<string> Groups { get; set; }
+
+        public PlayerModel()
+        {
+            this.Groups = new List<string>();
+        }
+    }
+    public class PlayerGameInfoModel
+    {
+        public Guid GameId { get; set; }
+        public Guid PlayerId { get; set; }
     }
     public class GameModel
     {
