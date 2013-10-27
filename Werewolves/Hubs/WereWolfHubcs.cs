@@ -23,7 +23,7 @@ namespace Werewolves
                 {
                     await Groups.Add(this.Context.ConnectionId, group);
                 }
-                await Clients.Caller.message("Welcome back!");
+                await Clients.Caller.message("Admin", "Welcome back!");
 
                 return new PlayerGameInfoModel() { GameId = game.Id, PlayerId = player.Id };
             }
@@ -39,8 +39,8 @@ namespace Werewolves
                     Groups = new List<string>() { "players" }
                 };
                 game.Players.Add(player);
-                await Clients.Caller.message("You've joined the game!");
-                await Clients.Others.message(name + " has joined the name");
+                await Clients.Caller.message("Admin", "You've joined the game!");
+                await Clients.Others.message("Admin", name + " has joined the name");
                 await Groups.Add(this.Context.ConnectionId, "players");
 
                 return new PlayerGameInfoModel() { GameId = game.Id, PlayerId = player.Id };
@@ -57,7 +57,7 @@ namespace Werewolves
                 };
                 await Groups.Add(player.ConnectionId, "viewers");
                 await Clients.Caller.error("You cannot join this game becuase it is already started, you have been added to the viewers");
-                await Clients.Caller.message("Welcome to the game, you're a viewer, please wait until this game is over.");
+                await Clients.Caller.message("Admin", "Welcome to the game, you're a viewer, please wait until this game is over.");
 
                 return new PlayerGameInfoModel() { GameId = game.Id, PlayerId = player.Id };
             }
@@ -86,7 +86,7 @@ namespace Werewolves
         {
             game.IsStarted = true;
 
-            await Clients.Group("players").message("The game has started...let the lynching begin");
+            await Clients.Group("players").message("Admin", "The game has started...let the lynching begin");
 
 
             var r1 = new Random().Next(game.Players.Count());
@@ -120,7 +120,7 @@ namespace Werewolves
 
             await Clients.Group("werewolves").setWerewolf();
 
-            await Clients.Group("werewolves").message("You have been selected as a Werewolf. A you now have a chat window for your other werewolf brethren");
+            await Clients.Group("werewolves").message("Admin", "You have been selected as a Werewolf. A you now have a chat window for your other werewolf brethren");
            
             await Clients.Group("players").initiateVote();
         }
@@ -128,27 +128,32 @@ namespace Werewolves
         public async Task WereWolfChat(string message)
         {
             var name = game.FindByConnectionId(this.Context.ConnectionId).Name;
-            await Clients.Group("werewolves").werewolfMessage(name + ": " + message);
+            await Clients.Group("werewolves").werewolfMessage(name, message);
         }
         public async Task GeneralChat(string message)
         {
             var name = game.FindByConnectionId(this.Context.ConnectionId).Name;
-            await Clients.All.message(name + ": " + message);
+
+            await Clients.All.message(name, message);
         }
         
         public async Task CastVote(string player)
         {
+            //get the current and player which that player voted for
             var currentPlayer = game.FindByConnectionId(this.Context.ConnectionId);
             var votedPlayer = game.FindByConnectionId(player);
 
 
-            await Clients.Group("viewers").message(currentPlayer.Name + " voted for " + votedPlayer.Name);
+            await Clients.Group("viewers").message("Admin", currentPlayer.Name + " voted for " + votedPlayer.Name);
 
             game.Votes.Add(player);
 
+            await Clients.All.updateVoting(((double)game.Votes.Count() / (double)game.Players.Count()) * 100);
+
             if (game.Votes.Count() == game.Players.Count())
             {
-                await Clients.All.message("All votes have been cast. Voting is now closed");
+                await Clients.All.updateVoting(0);
+                await Clients.All.message("Admin", "All votes have been cast. Voting is now closed");
                 
                 await Clients.Group("players").votingClosed();
                 
@@ -165,7 +170,7 @@ namespace Werewolves
 
                 var votedOffPlayer = game.FindByConnectionId(winner.player);
 
-                await Clients.Client(player).message("You've been lynched. Sorry.");
+                await Clients.Client(player).message("Admin", "You've been lynched. Sorry.");
                 game.Players.Remove(votedOffPlayer);
                 
                 await Groups.Remove(votedOffPlayer.ConnectionId, "players");
@@ -174,7 +179,7 @@ namespace Werewolves
                 await Groups.Add(votedOffPlayer.ConnectionId, "viewers");
                 votedOffPlayer.Groups.Add("viewers");
 
-                await this.Clients.Group("players").message(votedOffPlayer.Name + " has been lynched");
+                await this.Clients.Group("players").message("Admin", votedOffPlayer.Name + " has been lynched");
 
                 game.ResetVotes();
 
@@ -182,11 +187,11 @@ namespace Werewolves
                 {
                     if (game.Players.Any(x => x.IsWerewolf))
                     {
-                        await Clients.All.message("The Werewolves have won!");
+                        await Clients.All.message("Admin", "The Werewolves have won!");
                     }
                     else
                     {
-                        await Clients.All.message("The Villagers have won!");
+                        await Clients.All.message("Admin", "The Villagers have won!");
                     }
                 }
                 else
