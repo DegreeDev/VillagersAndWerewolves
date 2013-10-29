@@ -28,7 +28,6 @@ namespace Werewolves
                 return new PlayerGameInfoModel() { GameId = game.Id, PlayerId = player.Id };
             }
 
-
             if (!game.IsStarted)
             {
                 var player = new PlayerModel()
@@ -39,11 +38,12 @@ namespace Werewolves
                     Groups = new List<string>() { "players" }
                 };
                 game.Players.Add(player);
-                await Clients.Caller.message("Admin", "You've joined the game!");
-                await Clients.Others.message("Admin", name + " has joined the name");
-                await Groups.Add(this.Context.ConnectionId, "players");
 
-                return new PlayerGameInfoModel() { GameId = game.Id, PlayerId = player.Id };
+                await Clients.Caller.message("Admin", "You've joined the game!");
+				await Clients.Others.message("Admin", name + " has joined the game");
+				await Groups.Add(this.Context.ConnectionId, "players");
+
+				return new PlayerGameInfoModel() { GameId = game.Id, PlayerId = player.Id };
                 
             }
             else
@@ -56,7 +56,7 @@ namespace Werewolves
                     Groups = new List<string>() { "viewers" }
                 };
                 await Groups.Add(player.ConnectionId, "viewers");
-                await Clients.Caller.error("You cannot join this game becuase it is already started, you have been added to the viewers");
+                await Clients.Caller.error("You cannot join this game because it is already started, you have been added to the viewers");
                 await Clients.Caller.message("Admin", "Welcome to the game, you're a viewer, please wait until this game is over.");
 
                 return new PlayerGameInfoModel() { GameId = game.Id, PlayerId = player.Id };
@@ -81,6 +81,10 @@ namespace Werewolves
         {
             return base.OnConnected();
         }
+		public override Task OnReconnected()
+		{
+			return base.OnReconnected();
+		}
        
         public async Task StartGame()
         {
@@ -114,15 +118,15 @@ namespace Werewolves
                 return x;
             }).ToList();
 
-            await Groups.Add(werewolve1.ConnectionId, "werewolves");
-            await Groups.Add(werewolve2.ConnectionId, "werewolves");
             
-
-            await Clients.Group("werewolves").setWerewolf();
-
-            await Clients.Group("werewolves").message("Admin", "You have been selected as a Werewolf. A you now have a chat window for your other werewolf brethren");
-           
-            await Clients.Group("players").initiateVote();
+            
+			await Task.WhenAll(
+				Groups.Add(werewolve1.ConnectionId, "werewolves"),
+				Groups.Add(werewolve2.ConnectionId, "werewolves"),
+	            Clients.Group("werewolves").setWerewolf(),
+	            Clients.Group("werewolves").message("Admin", "You have been selected as a Werewolf. A you now have a chat window for your other werewolf brethren"),
+	            Clients.Group("players").initiateVote()
+			);
         }
 
         public async Task WereWolfChat(string message)

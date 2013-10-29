@@ -241,39 +241,31 @@
                 Methods that the server can call on the client are defined on the 'chat.client' object
             */
             self.chat.client.initiateVote = function () {
-                self.generalMessages.unshirt("Voting started!");
+                self.generalMessages.unshift("Voting started!");
 
                 self.isVoting(true);
                 self.chat.server.getCurrentPlayers();
             };
-
             self.chat.client.updateVoting = function (percentage) {
                 self.votingCompletion(parseFloat(percentage));
             };
-
             self.chat.client.leaveGame = function () {
                 self.isJoined(false);
             };
-
             self.chat.client.message = function (name, message) {
                 self.generalMessages.unshift("<b>" + name + ": </b>" + message);
             };
-
-
             self.chat.client.werewolfMessage = function (name, message) {
                 self.werewolfMessages.unshift("<b>" + name+ ": </b>" + message);
             };
-
             self.chat.client.error = function (message) {
                 self.error(message);
                 self.showError(true);
             };
-
             self.chat.client.processPlayers = function (players) {
                 self.players.removeAll();
                 ko.utils.arrayPushAll(self.players, players);
             };
-
             self.chat.client.setWerewolf = function () {
                 self.isWerewolf(true);
             };
