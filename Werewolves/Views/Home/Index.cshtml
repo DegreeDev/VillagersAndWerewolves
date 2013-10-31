@@ -156,6 +156,9 @@
             //      -This can be overrode with [HubName("VillagersAndWerewolfHub")]
             self.chat = $.connection.wereWolfHub;
 
+
+        	
+
             self.$joinModal = $(".join-modal");
 
             //two observable lists to hold the general chat messages and the werewolf specific messages
@@ -187,11 +190,6 @@
 
             self.error = ko.observable();
             self.showError = ko.observable(false);
-
-            //don't worry about it
-            self.isAdmin = ko.computed(function () {
-                return self.name() === "Matthew";
-            });
 
             //the player you select to lynch
             self.selectedPlayer = ko.observable();
@@ -279,6 +277,11 @@
                     $(".name-input").focus();
                 });
             };
+
+        	//mousetrap bindings
+            Mousetrap.bind('ctrl+.', function () {
+            	self.isAdmin(true);
+            });
         }
         $(function () {
             $(document).on("create.vandw", function () {

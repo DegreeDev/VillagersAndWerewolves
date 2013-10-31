@@ -7,7 +7,6 @@ namespace Werewolves.Models
 {
     public class PlayerModel
     {
-        public Guid Id { get; set; }
         public bool IsWerewolf { get; set; }
         public string ConnectionId { get; set; }
         public string Name { get; set; }
@@ -21,7 +20,7 @@ namespace Werewolves.Models
     public class PlayerGameInfoModel
     {
         public Guid GameId { get; set; }
-        public Guid PlayerId { get; set; }
+        public string PlayerId { get; set; }
     }
     public class GameModel
     {

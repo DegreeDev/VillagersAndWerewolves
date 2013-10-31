@@ -14,7 +14,8 @@ namespace Werewolves
             bundles.Add(new ScriptBundle("~/bundles/lib").Include(
                         "~/Scripts/knockout-{version}.js",
                         "~/Scripts/jquery.signalR-{version}.js",
-                        "~/Scripts/bootstrap.js"
+                        "~/Scripts/bootstrap.js", 
+						"~/Scripts/mousetrap.min.js"
             ));
 
             bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
