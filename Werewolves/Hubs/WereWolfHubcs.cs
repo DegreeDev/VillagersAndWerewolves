@@ -86,7 +86,7 @@ namespace Werewolves
 	   
 		public async Task StartGame()
 		{
-			await _game.SetWolves();
+			await _game.StartGame();
 		}
 
 		public async Task WereWolfChat(string message)
@@ -96,7 +96,8 @@ namespace Werewolves
 		}
 		public async Task GeneralChat(string message)
 		{
-			var name = _game.FindByConnectionId(this.Context.ConnectionId).Name;
+			var player = _game.FindByConnectionId(this.Context.ConnectionId);
+			string name = player == null ? "Console Man" : player.Name;
 			await Clients.All.message(name, message);
 		}
 		

@@ -66,11 +66,7 @@ namespace Werewolves.Models
 
 		public async Task ProccessVoteEnd()
 		{
-			Task.WhenAll(
-					_context.Clients.All.updateVoting(0),
-					_context.Clients.All.message("Admin", "All votes have been cast. Voting is now closed"),
-					_context.Clients.Group("players").votingClosed()
-				);
+			
 			this.IsVotingOpen = false;
 
 			var winner = (from v in _votes
@@ -119,11 +115,12 @@ namespace Werewolves.Models
 			return this.Players.FirstOrDefault(x => x.ConnectionId == connectionId);
 		}
 
-		public async Task SetWolves()
+		public async Task StartGame()
 		{
 			this.IsStarted = true;
 
-			await _context.Clients.Group("players").message("Admin", "The game has started...let the lynching begin");
+			await _context.Clients.Group("players")
+				.message("Admin", "The game has started...let the lynching begin");
 
 			var r1 = new Random().Next(_players.Count());
 			var r2 = new Random().Next(_players.Count());
