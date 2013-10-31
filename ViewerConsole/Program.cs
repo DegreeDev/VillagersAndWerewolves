@@ -24,6 +24,7 @@ namespace ViewerConsole
 					{
 						Console.WriteLine(name + ": " + message);
 					});
+
 					Console.WriteLine("ConnectionId: " + connection.ConnectionId);
 					await hub.Invoke("joinViewers");
 				});
