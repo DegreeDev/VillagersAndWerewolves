@@ -14,6 +14,13 @@ namespace Werewolves
 
     public class MvcApplication : System.Web.HttpApplication
     {
+		private static Werewolves.Models.GameModel _game = 
+			new Werewolves.Models.GameModel(
+				Microsoft.AspNet.SignalR.GlobalHost.ConnectionManager.GetHubContext<WereWolfHub>()
+			);
+
+		public static Werewolves.Models.GameModel Game { get { return _game; } }
+
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
@@ -23,6 +30,8 @@ namespace Werewolves
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             AuthConfig.RegisterAuth();
+
+
         }
     }
 }
