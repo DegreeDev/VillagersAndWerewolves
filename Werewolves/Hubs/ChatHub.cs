@@ -13,5 +13,26 @@ namespace Werewolves.Hubs
 		{
 			await Clients.All.message(name, message);
 		}
+
+		public override Task OnConnected()
+		{
+			return base.OnConnected();
+		}
+		public override Task OnDisconnected()
+		{
+			return base.OnDisconnected();
+		}
+		public override Task OnReconnected()
+		{
+			return base.OnReconnected();
+		}
+		public async Task JoinGroup(string group)
+		{
+			if (!string.IsNullOrWhiteSpace(group))
+			{
+				await Groups.Add(Context.ConnectionId, group);
+			}
+		}
+
 	}
 }
