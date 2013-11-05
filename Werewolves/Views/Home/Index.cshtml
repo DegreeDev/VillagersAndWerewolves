@@ -206,8 +206,8 @@
 			self.players = ko.observableArray();
 
 			//your name
-			self.name = ko.observable("matthew");
-			self.email = ko.observable("mslee61@gmail.com");
+			self.name = ko.observable("");
+			self.email = ko.observable("");
 			self.gravatar = ko.observable();
 			self.gravatarSmall = ko.computed(function () {
 				return self.gravatar() + "?s=10";

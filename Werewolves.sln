@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WerewolvesServices", "Werew
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatApp", "ChatApp\ChatApp.csproj", "{3732235E-0BD3-45A3-8310-57F0DE4C429E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logger", "Logger\Logger.csproj", "{B952D40D-B578-4CCA-911B-F0627DB5521F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{3732235E-0BD3-45A3-8310-57F0DE4C429E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3732235E-0BD3-45A3-8310-57F0DE4C429E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3732235E-0BD3-45A3-8310-57F0DE4C429E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B952D40D-B578-4CCA-911B-F0627DB5521F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B952D40D-B578-4CCA-911B-F0627DB5521F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B952D40D-B578-4CCA-911B-F0627DB5521F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B952D40D-B578-4CCA-911B-F0627DB5521F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
