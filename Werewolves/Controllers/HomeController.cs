@@ -6,11 +6,19 @@ using System.Web.Mvc;
 
 namespace Werewolves.Controllers
 {
-    public class HomeController : Controller
-    {
-        public ActionResult Index()
-        {
-            return View();
-        }
-    }
+	public class HomeController : Controller
+	{
+		public ActionResult Index()
+		{
+			return View();
+		}
+		public ActionResult Chat()
+		{
+			return View();
+		}
+		public ActionResult ChatKo()
+		{
+			return View("Chat.ko");
+		}
+	}
 }

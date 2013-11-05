@@ -1,0 +1,82 @@
+﻿@{
+	ViewBag.Title = "Chat";
+}
+<div data-application="chat">
+	<div class="row-fluid">
+		<div class="chat-pane col-md-4">
+			<div class="panel panel-info">
+				<div class="panel-heading">
+					<h3 class="panel-title">Chat
+						<label>
+						Name: <input type="text" data-user-name="" />
+					</label></h3>
+					
+				</div>
+				<div class="panel-body">
+					<div class="input-group hidden input-box">
+						<input type="text" class="form-control" data-submit-me="" />
+						<span class="input-group-btn">
+							<button class="btn" data-send="">Send</button>
+						</span>
+					</div>
+					<br />
+					<table class="table table-striped table-condensed table-bordered">
+						<tbody data-append-to-me="">
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+@section Scripts {
+	@Scripts.Render("~/bundles/lib")
+	<script type="text/javascript" src="~/Scripts/mousetrap.min.js"></script>
+	<script type="text/javascript" src="~/signalr/hubs"></script>
+		<script>
+			$(function () {
+				$(document).on("chat.start", function () {
+					$("[data-application='chat']").each(function(index, element){
+						var self = $(element);
+						if (self.data("is-setup")) return; else self.data("is-setup", true);
+
+						var hub = $.connection.chatHub;
+
+						$(document).on("send.message", function () {
+							var message = $("[data-submit-me]").val(), 
+								name = $("[data-user-name]").val();
+							$("[data-submit-me]").val("");
+
+
+							hub.server.handleMessage(name, message);
+						});
+
+						hub.client.message = function (name, message) {
+							$("[data-append-to-me]").append(
+								$("<tr></tr>").append(
+									$("<td></td>").append( 
+										$("<span></span>").html("<b>" + name + ":</b> " + message)
+									)
+								)
+							);
+						};
+
+						$("[data-send]").on("click", function () {
+							$(document).trigger("send.message");
+						});
+
+						$("[data-user-name]").on("change", function () {
+							$(this).addClass("disabled").attr("disabled", "disabled");
+							$(".input-box").removeClass("hidden");
+
+						});
+
+						$.connection.hub.start().done(function () {
+							console.log("hub started");
+						});
+					});
+				}).trigger("chat.start");
+			});
+		</script>
+	}
+
