@@ -14,6 +14,7 @@ namespace ViewerConsole
 		static void Main(string[] args)
 		{
 			var connection = new SignalRHubConnection("http://villagersandwerewolves.azurewebsites.net/");
+			
 			//var connection = new SignalRHubConnection("http://localhost:38369/");
 
 			var hub = connection.CreateHubProxy("wereWolfHub");

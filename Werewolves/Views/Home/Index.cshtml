@@ -5,8 +5,12 @@
 <div class="row-fluid" data-bind="if: isJoined">
 	<div class="col-md-9">
 		<div class="page-header">
-			<h1>Welcome <small data-bind="text: name"></small></h1>
-			<button class="btn" data-bind="visible: !isStarted() && isAdmin, click: startGame">Start Game</button>
+			
+				<h1>Welcome <small data-bind="text: name"></small><img class="" data-bind="	attr: { src: gravatar }" alt="Profile" /></h1>
+				
+				<span class="label label-primary" data-bind="text: transport"></span>
+				<span class="label" data-bind="text: connectionState, css: connectionStateClass"></span>
+				<button class="btn" data-bind="visible: !isStarted() && isAdmin, click: startGame">Start Game</button>
 		</div>
 	</div>
 	<div class="col-md-3">
@@ -16,6 +20,7 @@
 		</div>
 	</div>
 </div>
+<div class="clear"></div>
 @*<div class="row-fluid" data-bind="if: isJoined">
 	<div class="col-md-12">
 		<div class="panel-group" id="accordion">
@@ -121,7 +126,9 @@
 					<div class="modal-body">
 						<div class="">
 							<label>What's your name?</label>
-							<input type="text" class="form-control name-input" data-bind="value: name, enterKey: joinGame" />
+							<input type="text" class="form-control name-input" data-bind="value: name" />
+							<label>Email:</label>
+							<input type="text" class="form-control name-input" data-bind="value: email, enterKey: joinGame" />
 						</div>
 					</div>
 					<div class="modal-footer">
@@ -161,8 +168,29 @@
 			//      -This can be overrode with [HubName("VillagersAndWerewolfHub")]
 			self.chat = $.connection.wereWolfHub;
 
-
-
+			self.transport = ko.observable();
+			self.connectionState = ko.observable();
+			self.connectionStateClass = ko.observable();
+			$.connection.hub.stateChanged(function (state) {
+				switch (state.newState) {
+					case 0:
+						self.connectionState("Connecting");
+						self.connectionStateClass("label-info");
+						break;
+					case 1:
+						self.connectionState("Connected");
+						self.connectionStateClass("label-success");
+						break;
+					case 2:
+						self.connectionState("Reconnecting");
+						self.connectionStateClass("label-warning");
+						break;
+					case 4:
+						self.connectionState("Disconnected");
+						self.connectionStateClass("label-danger");
+						break;
+				}
+			});
 
 			self.$joinModal = $(".join-modal");
 
@@ -178,7 +206,12 @@
 			self.players = ko.observableArray();
 
 			//your name
-			self.name = ko.observable();
+			self.name = ko.observable("matthew");
+			self.email = ko.observable("mslee61@gmail.com");
+			self.gravatar = ko.observable();
+			self.gravatarSmall = ko.computed(function () {
+				return self.gravatar() + "?s=10";
+			});
 			self.playerId = ko.observable(null);
 			self.gameId = ko.observable();
 
@@ -224,9 +257,10 @@
 			self.joinGame = function () {
 				self.$joinModal.modal("hide");
 				self.$joinModal.hide();
-				self.chat.server.joinGame(self.name(), self.playerId()).done(function (result) {
+				self.chat.server.joinGame(self.name(), self.email(), self.playerId()).done(function (result) {
 					self.playerId(result.playerId);
 					self.gameId(result.gameId);
+					self.gravatar(result.gravatar);
 				});
 				self.isJoined(true);
 			};
@@ -256,11 +290,11 @@
 			self.chat.client.leaveGame = function () {
 				self.isJoined(false);
 			};
-			self.chat.client.message = function (name, message) {
-				self.generalMessages.unshift("<b>" + name + ": </b>" + message);
+			self.chat.client.message = function (name, message, gravatar) {
+				self.generalMessages.unshift("<img src='" + gravatar + "'/>"+ "<b>" + name + ": </b>" + message);
 			};
 			self.chat.client.werewolfMessage = function (name, message) {
-				self.werewolfMessages.unshift("<b>" + name + ": </b>" + message);
+				self.werewolfMessages.unshift(gravatar + "<b>" + name + ": </b>" + message);
 			};
 			self.chat.client.error = function (message) {
 				self.error(message);
@@ -277,7 +311,9 @@
 			//A function to call once the knockout object is made
 			self.startHub = function () {
 				$.connection.hub.start().done(function () {
-					console.log("hub started");
+
+					self.transport($.connection.hub.transport.name);
+
 
 					self.$joinModal.modal();
 					$(".name-input").focus();
@@ -291,9 +327,9 @@
 		}
 		$(function () {
 			$(document).on("create.vandw", function () {
-				var vm = new ViewModel();
-				ko.applyBindings(vm);
-				vm.startHub();
+				window.vm = new ViewModel();
+				ko.applyBindings(window.vm);
+				window.vm.startHub();
 			}).trigger("create.vandw");
 		});
 	</script>

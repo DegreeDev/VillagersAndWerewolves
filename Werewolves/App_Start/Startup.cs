@@ -7,11 +7,13 @@ using Owin;
 
 namespace Werewolves
 {
-    public class Startup
-    {
-        public void Configuration(IAppBuilder app)
-        {
-            app.MapSignalR();
-        }
-    }
+	public class Startup
+	{
+		public void Configuration(IAppBuilder app)
+		{
+			app.MapSignalR(new Microsoft.AspNet.SignalR.HubConfiguration{
+				
+			});
+		}
+	}
 }

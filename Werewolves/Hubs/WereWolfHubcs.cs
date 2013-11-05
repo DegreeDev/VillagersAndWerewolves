@@ -12,55 +12,72 @@ namespace Werewolves
 	public class WereWolfHub : Hub
 	{
 		private GameModel _game = MvcApplication.Game;
+		private string _adminGravatar;
 
-		public async Task<PlayerGameInfoModel> JoinGame(string name, string id)
+		public WereWolfHub()
 		{
+			_adminGravatar = "http://gravatar.com/avatar/ksjdlfjal?s=20";
+		}
+
+		private async Task Message(string name, string message, dynamic who, string gravatar)
+		{
+			await who.message(name, message, gravatar);
+		}
+
+		public async Task<PlayerGameInfoModel> JoinGame(string name, string email, string id)
+		{
+			PlayerModel player;
+
 			if (!string.IsNullOrWhiteSpace(id))
 			{
-				var player = _game.FindByConnectionId(id);
+				player = _game.FindByConnectionId(id);
 				player.ConnectionId = this.Context.ConnectionId;
 				foreach (var group in player.Groups)
 				{
 					await Groups.Add(this.Context.ConnectionId, group);
 				}
-				await Clients.Caller.message("Admin", "Welcome back!");
-
-				return new PlayerGameInfoModel() { GameId = _game.Id, PlayerId = player.ConnectionId };
+				await this.Message("Admin", "Welcome back!", Clients.Caller, _adminGravatar);
 			}
-
-			if (!_game.IsStarted)
+			else if (!_game.IsStarted)
 			{
-				var player = new PlayerModel()
+				player = new PlayerModel
 				{
 					ConnectionId = this.Context.ConnectionId,
 					Name = name,
+					Email = email,
 					Groups = new List<string>() { "players" }
 				};
 				_game.Players.Add(player);
 
-				await Clients.Caller.message("Admin", "You've joined the game!");
-				await Clients.Others.message("Admin", name + " has joined the game");
+				await this.Message("Admin", "You've joined the game!", Clients.Caller, _adminGravatar);
+				await this.Message("Admin", name + " has joined the game", Clients.Caller, _adminGravatar);
 				await Groups.Add(this.Context.ConnectionId, "players");
-
-				return new PlayerGameInfoModel() { GameId = _game.Id, PlayerId = player.ConnectionId};
-				
 			}
 			else
 			{
-				 var player = new PlayerModel()
+				player = new PlayerModel
 				{
 					ConnectionId = this.Context.ConnectionId,
 					Name = name,
 					Groups = new List<string>() { "viewers" }
 				};
-				await Groups.Add(player.ConnectionId, "viewers");
-				await Clients.Caller.error("You cannot join this game because it is already started, you have been added to the viewers");
-				await Clients.Caller.message("Admin", "Welcome to the game, you're a viewer, please wait until this game is over.");
 
-				return new PlayerGameInfoModel() { GameId = _game.Id, PlayerId = player.ConnectionId };
+				await Groups.Add(player.ConnectionId, "viewers");
+				
+				await Task.WhenAll(
+					await Clients.Caller.error("You cannot join this game because it is already started, you have been added to the viewers"),
+					await this.Message("Admin","Welcome to the game, you're a viewer, please wait until this game is over.", Clients.Caller, _adminGravatar)
+				);
 			}
+
+			return new PlayerGameInfoModel
+			{
+				gameId = _game.Id,
+				playerId = player.ConnectionId,
+				gravatar = await player.GetGravatar()
+			};
 		}
-		
+
 		public async Task SetName(string name)
 		{
 			var player = _game.FindByConnectionId(this.Context.ConnectionId);
@@ -83,7 +100,7 @@ namespace Werewolves
 		{
 			return base.OnReconnected();
 		}
-	   
+
 		public async Task StartGame()
 		{
 			await _game.StartGame();
@@ -91,16 +108,16 @@ namespace Werewolves
 
 		public async Task WereWolfChat(string message)
 		{
-			var name = _game.FindByConnectionId(this.Context.ConnectionId).Name;
-			await Clients.Group("werewolves").werewolfMessage(name, message);
+			var player = _game.FindByConnectionId(this.Context.ConnectionId);
+			await Message(player.Name, message, Clients.Group("werewolves"), await player.GetGravatar());
 		}
 		public async Task GeneralChat(string message)
 		{
 			var player = _game.FindByConnectionId(this.Context.ConnectionId);
 			string name = player == null ? "Console Man" : player.Name;
-			await Clients.All.message(name, message);
+			await Message(name, message, Clients.All, await player.GetGravatar());
 		}
-		
+
 		public async Task CastVote(string player)
 		{
 			//get the current and player which that player voted for
@@ -119,7 +136,7 @@ namespace Werewolves
 		{
 			await Clients.Caller.processPlayers(
 				_game.Players
-					.Where(x=>x.ConnectionId != this.Context.ConnectionId)
+					.Where(x => x.ConnectionId != this.Context.ConnectionId)
 					.Select(x => new
 						{
 							id = x.ConnectionId,

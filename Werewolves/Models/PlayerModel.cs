@@ -11,8 +11,14 @@ namespace Werewolves.Models
 	{
 		public bool IsWerewolf { get; set; }
 		public string ConnectionId { get; set; }
+		public string Email { get; set; }
 		public string Name { get; set; }
 		public IList<string> Groups { get; set; }
+
+		public async Task<string> GetGravatar()
+		{
+			return await Task.FromResult<string>(GravatarService.Get(Email, 80));
+		}
 
 		public PlayerModel()
 		{
@@ -21,9 +27,17 @@ namespace Werewolves.Models
 	}
 	public class PlayerGameInfoModel
 	{
-		public Guid GameId { get; set; }
-		public string PlayerId { get; set; }
+		public Guid gameId { get; set; }
+		public string playerId { get; set; }
+		public string gravatar { get; set; }
 	}
+	public class GameMessageModel
+	{
+		public string Name { get; set; }
+		public string Message { get; set; }
+		public string Gravatar { get; set; }
+	}
+
 	public class GameModel
 	{
 		private IHubContext _context;
