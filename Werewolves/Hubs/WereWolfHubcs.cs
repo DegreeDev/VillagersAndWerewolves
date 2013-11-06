@@ -109,7 +109,7 @@ namespace Werewolves
 		{
             _game.IsStarted = true;
 
-            await Clients.Group("players").message("Admin", "The game has started...let the lynching begin");
+            await Clients.Group("players").message("Admin", "The game has started...let the lynching begin", _adminGravatar);
 
             var r1 = new Random().Next(_game.Players.Count());
             var r2 = new Random().Next(_game.Players.Count());
