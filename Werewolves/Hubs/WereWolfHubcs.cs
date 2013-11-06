@@ -143,7 +143,7 @@ namespace Werewolves
             
             await Task.WhenAll(
                 Clients.Group("werewolves").setWerewolf(),
-                Clients.Group("werewolves").message("Admin", "You have been selected as a Werewolf. A you now have a chat window for your other werewolf brethren", _adminGravatar),
+				Clients.Group("werewolves").werewolfMessage("Admin", "You have been selected as a Werewolf. Chat here with the other wolves", _adminGravatar),
                 Clients.Group("players").initiateVote()
             );
 		}
@@ -189,7 +189,9 @@ namespace Werewolves
                 var votedOffPlayer = _game.FindByConnectionId(winner.player);
 
 				await Clients.Client(winner.player).message("Admin", "You've been lynched. Sorry.", _adminGravatar);
+				await Clients.Client(winner.player).error("You got the most votes, you're out of the game");
                 _game.Players.Remove(votedOffPlayer);
+
 
                 await Groups.Remove(votedOffPlayer.ConnectionId, "players");
                 votedOffPlayer.Groups.Remove("players");
