@@ -36,7 +36,7 @@ namespace ViewerConsole
 				var message = Console.ReadLine();
 
 				if (message == "quit")
-				{
+				{ 
 					break;
 				}
 				Task.Run(async () =>

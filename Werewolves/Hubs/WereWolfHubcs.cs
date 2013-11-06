@@ -158,7 +158,10 @@ namespace Werewolves
 		{
 			var player = _game.FindByConnectionId(Context.ConnectionId);
 			string name = player == null ? "Console Man" : player.Name;
-			await Message(name, message, Clients.All, await player.GetGravatar());
+
+			var gravatar = await player.GetGravatar();
+
+			await Message(name, message, Clients.All, gravatar);
 		}
 
 		public async Task CastVote(string player)
