@@ -63,6 +63,7 @@ namespace Werewolves
 				{
 					ConnectionId = Context.ConnectionId,
 					Name = name,
+					Email = email,
 					Groups = new List<string>() { "viewers" }
 				};
 
@@ -73,12 +74,12 @@ namespace Werewolves
 					await Message("Admin","Welcome to the game, you're a viewer, please wait until this game is over.", Clients.Caller, _adminGravatar)
 				);
 			}
-
+			var gravatar = await player.GetGravatar();
 			return new PlayerGameInfoModel
 			{
 				gameId = _game.Id,
 				playerId = player.ConnectionId,
-				gravatar = await player.GetGravatar()
+				gravatar = gravatar
 			};
 		}
 
@@ -142,7 +143,7 @@ namespace Werewolves
             
             await Task.WhenAll(
                 Clients.Group("werewolves").setWerewolf(),
-                Clients.Group("werewolves").message("Admin", "You have been selected as a Werewolf. A you now have a chat window for your other werewolf brethren"),
+                Clients.Group("werewolves").message("Admin", "You have been selected as a Werewolf. A you now have a chat window for your other werewolf brethren", _adminGravatar),
                 Clients.Group("players").initiateVote()
             );
 		}
@@ -150,7 +151,8 @@ namespace Werewolves
 		public async Task WereWolfChat(string message)
 		{
 			var player = _game.FindByConnectionId(Context.ConnectionId);
-			await Message(player.Name, message, Clients.Group("werewolves"), await player.GetGravatar());
+			var gravatar = await player.GetGravatar();
+			await Clients.Group("werewolves").werewolfMessage(player.Name, message, gravatar);
 		}
 		public async Task GeneralChat(string message)
 		{
