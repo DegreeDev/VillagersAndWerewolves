@@ -54,7 +54,7 @@ namespace Werewolves
 				_game.Players.Add(player);
 
 				await Message("Admin", "You've joined the game!", Clients.Caller, _adminGravatar);
-				await Message("Admin", name + " has joined the game", Clients.Caller, _adminGravatar);
+				await Message("Admin", name + " has joined the game", Clients.Others, _adminGravatar);
 				await Groups.Add(Context.ConnectionId, "players");
 			}
 			else
@@ -165,10 +165,10 @@ namespace Werewolves
 			var currentPlayer = _game.FindByConnectionId(Context.ConnectionId);
 			var votedPlayer = _game.FindByConnectionId(player);
 
-            await Clients.Group("viewers").message("Admin", currentPlayer.Name + " voted for " + votedPlayer.Name);
-            await Clients.All.updateVoting(_game.VotingPercentage);
+			_game.Votes.Add(votedPlayer.ConnectionId);
 
-            _game.Votes.Add(votedPlayer.ConnectionId);
+			await Clients.Group("viewers").message("Admin", currentPlayer.Name + " voted for " + votedPlayer.Name, _adminGravatar);
+            await Clients.All.updateVoting(_game.VotingPercentage);
 
 			if (_game.IsVotingOver)
 			{
@@ -183,7 +183,7 @@ namespace Werewolves
 
                 var votedOffPlayer = _game.FindByConnectionId(winner.player);
 
-                await Clients.Client(winner.player).message("Admin", "You've been lynched. Sorry.");
+				await Clients.Client(winner.player).message("Admin", "You've been lynched. Sorry.", _adminGravatar);
                 _game.Players.Remove(votedOffPlayer);
 
                 await Groups.Remove(votedOffPlayer.ConnectionId, "players");
@@ -192,19 +192,21 @@ namespace Werewolves
                 await Groups.Add(votedOffPlayer.ConnectionId, "viewers");
                 votedOffPlayer.Groups.Add("viewers");
 
-                await Clients.Group("players").message("Admin", votedOffPlayer.Name + " has been lynched");
+				await Clients.Group("players").message("Admin", votedOffPlayer.Name + " has been lynched", _adminGravatar);
 
                 _game.ResetVotes();
+
+				await Clients.All.updateVoting(_game.VotingPercentage);
 
                 if (_game.Players.Count() == 2)
                 {
                     if (_game.Players.Any(x => x.IsWerewolf))
                     {
-                        await Clients.All.message("Admin", "The Werewolves have won!");
+                        await Clients.All.message("Admin", "The Werewolves have won!", _adminGravatar);
                     }
                     else
                     {
-                        await Clients.All.message("Admin", "The Villagers have won!");
+						await Clients.All.message("Admin", "The Villagers have won!", _adminGravatar);
                     }
                 }
                 else
